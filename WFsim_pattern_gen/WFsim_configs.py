@@ -29,7 +29,7 @@ class TrainingPatternS2WFsim(strax.LoopPlugin):
             result['y'][i] = t['y']
             result['z'][i] = t['z']
             result['amp'][i] = t['amp']
-            result['n_electron'] = t['n_electron']
+            result['n_electron'][i] = t['n_electron']
             p = peaks[((peaks['time'] < t['t_mean_photon'])&
                        (peaks['endtime'] > t['t_mean_photon']))]
             result['npeaks'][i] = len(p)

@@ -40,6 +40,7 @@ def plot_pattern(pmthits ,
         vmax_bottom = cbar_lim[1]        
     ###
     ax_top = fig.add_axes([0.04, 0.10, 0.40, 0.80])
+    ax_top.set_title("Top array", fontsize=12)
     ax_top.add_patch(plt.Circle( (0., 0.), tpc_radius, facecolor="none", edgecolor="black" ) )
     circles_top = []
     for pmt in pmtpos_top["i"]:
@@ -67,6 +68,7 @@ def plot_pattern(pmthits ,
     cbar_top = plt.colorbar(p, cax = ax_top_cbar)
     ####
     ax_bottom = fig.add_axes([0.54, 0.10, 0.40, 0.80])
+    ax_bottom.set_title("Bottom array", fontsize=12)
     ax_bottom.add_patch(plt.Circle( (0., 0.),tpc_radius, facecolor="none", edgecolor="black" ) )
     
     circles_bottom = []
