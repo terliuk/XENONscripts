@@ -82,6 +82,13 @@ class WFsim_config:
             assert self.maxA >= self.minA, "maximal value should be larger than minimal"
             print ("Will generate amplitude in range between", self.minA, "and", self.maxA)
             self.GenerateA = self.GenerateLinA
+        elif self.typeA == "log":
+            assert len(confA_split)==4, "wrong format, use \"A_log_min_max\", for example A_log_100_1000"
+            self.minA = float(confA_split[2])
+            self.maxA = float(confA_split[3])
+            assert self.maxA >= self.minA, "maximal value should be larger than minimal"
+            print ("Will generate amplitude logarithmically in range between", self.minA, "and", self.maxA)
+            self.GenerateA = self.GenerateLogA
         else: 
             raise ValueError("Unknown configuration for amplitude generation provided : "+confA)
     def SetZconf(self, confZ):
@@ -118,6 +125,8 @@ class WFsim_config:
         return(self.amp*np.ones(size))
     def GenerateLinA(self, size, c=None):
         return(self.randgen.uniform(self.minA, self.maxA,size=size))
+    def GenerateLogA(self, size, c=None):
+        return(10.**self.randgen.uniform(np.log10(self.minA), np.log10(self.maxA), size=size) )
     def GenerateConstZ(self, size, c=None):
         return(self.zvalue*np.ones(size))  
     def GenerateLinZ(self, size, c=None):

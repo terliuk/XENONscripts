@@ -40,15 +40,25 @@ print("Testing RNG : ", cur_RG.uniform(size=10))
 
 gen = WFsim_config(options.CONFIG,cur_RG)
 
-st = strax.Context(
-        storage=strax.DataDirectory('./strax_data'),
-        register=wfsim.RawRecordsFromFax,
-        config=dict(detector='XENONnT',
+config = dict(detector='XENONnT',
+                    **straxen.contexts.xnt_common_config,
                     to_pe_file= 'https://raw.githubusercontent.com/XENONnT/'
                                    'strax_auxiliary_files/master/fax_files/to_pe_nt.npy',
                     fax_config='https://raw.githubusercontent.com/XENONnT/'
                                'strax_auxiliary_files/master/fax_files/fax_config_nt.json',
-                    **straxen.contexts.xnt_common_config,),
+                    
+                    )
+config.update(dict(gain_model=('to_pe_constant', 0.00612255) ))
+
+
+
+print("===== Config =====")
+print(config)
+print("==================")
+st = strax.Context(
+        storage=strax.DataDirectory('./strax_data'),
+        register=wfsim.RawRecordsFromFax,
+        config=config,
         timeout= 3600,
         **straxen.contexts.common_opts)
 
@@ -100,6 +110,10 @@ outfile.create_dataset("corr_pos", data = corrected_pos, compression="gzip")
 outfile.create_dataset("area_per_channel", data = area_per_channel, compression="gzip")
 outfile.create_dataset("n_electron", data = n_electron, compression="gzip")
 outfile.create_dataset("amplitude", data = amplitude, compression="gzip")
+conf_to_save = str(st.config)
+
+outfile.create_dataset("strax_config", data=conf_to_save,dtype=h5py.string_dtype())
+
 outfile.close()
 
 print("Total time to generate: ",stop-start, " s")

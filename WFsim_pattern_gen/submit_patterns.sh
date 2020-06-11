@@ -31,7 +31,7 @@ WFSIMCONFLINE=$2
 NEVENTS=$3
 echo "WFsim config: " $WFSIMCONFLINE
 
-OUTFOLDER="/project2/lgrandi/terliuk/MCoutputs/WFsim_patterns/disk_meshes/${WFSIMCONFLINE}/"
+OUTFOLDER="/project2/lgrandi/terliuk/MCoutputs/WFsim_patterns/disk_const_PE/${WFSIMCONFLINE}/"
 OUTFILENAME="WFsim_${WFSIMCONFLINE}_N${NEVENTS}_${FILE_NR}.hdf5"
 echo "Filename ID: " $FILE_NR
 echo "OUTFOLDER   : " $OUTFOLDER 
