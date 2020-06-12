@@ -3,7 +3,7 @@ import tensorflow.keras as keras
 import numpy as np
 
 class ConvHex(tf.keras.layers.Layer):
-    def __init__(self, num_outputs, kernel_radius, activation="elu", ignore_out_coords = [],**kwargs):
+    def __init__(self, num_outputs, kernel_radius, activation="elu", ignore_out_coords = [], **kwargs):
         # ignore out = list of tuples that will be excluded for outputs
         # XENONnT is not exactly hexagonal and some pixels in corners are missing
         super(ConvHex, self).__init__(**kwargs)
@@ -12,6 +12,7 @@ class ConvHex(tf.keras.layers.Layer):
         self.activation = activation
         self.winitializer = tf.keras.initializers.GlorotNormal()
         self.ignore_out = ignore_out_coords
+    
     def get_config(self):
 
         config = super().get_config().copy()
@@ -59,7 +60,6 @@ class ConvHex(tf.keras.layers.Layer):
             for j in range(m_.shape[1]):
                 m_[i,j] = ((i+j)%2)
         return(m_)    
-
     
     def build(self, input_shape):
         self.n_inputs = input_shape[-1]
@@ -76,8 +76,8 @@ class ConvHex(tf.keras.layers.Layer):
         
         mask_ = mask_[i_cut:-i_cut,:]
         for coord in self.ignore_out:
-            # converting to tuple directly - allows it to work properly after model is stored
-            mask_[tuple(coord)] = 0.0 #
+            # somehow, giving tuple coordinates directly doesn't work when loading model
+            mask_[tuple(coord)]= 0.0
         mask_ = tf.constant( mask_.reshape([self.out_2D_shape[0], 
                                             self.out_2D_shape[1], 
                                                         1]) , dtype=tf.float32)
