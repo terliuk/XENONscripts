@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras as keras
+from tensorflow.python.ops import gen_sparse_ops
 import numpy as np
 
 class ConvHex(tf.keras.layers.Layer):
@@ -12,7 +13,7 @@ class ConvHex(tf.keras.layers.Layer):
         self.activation = activation
         self.winitializer = tf.keras.initializers.GlorotNormal()
         self.ignore_out = ignore_out_coords
-    
+        
     def get_config(self):
 
         config = super().get_config().copy()
@@ -60,12 +61,21 @@ class ConvHex(tf.keras.layers.Layer):
             for j in range(m_.shape[1]):
                 m_[i,j] = ((i+j)%2)
         return(m_)    
+
     
     def build(self, input_shape):
         self.n_inputs = input_shape[-1]
         self.out_2D_shape = [input_shape[1] - 4*self.kernel_radius, input_shape[2]-2*self.kernel_radius]
         self.one_kernel_indices = self.MakeHexMaskIndices(self.kernel_radius)
-        self.variable_indices = self.MakeVariableIndices(self.kernel_radius, self.num_outputs,self.n_inputs)
+        self.var_ind_not_ordered = self.MakeVariableIndices(self.kernel_radius, self.num_outputs,self.n_inputs)
+        tmp_ones = tf.ones([self.var_ind_not_ordered.shape[0]])
+        self.variable_indices,_ = gen_sparse_ops.sparse_reorder(
+                                               self.var_ind_not_ordered,
+                                               tmp_ones,
+                                               [self.kernel_radius*4+1,
+                                                           self.kernel_radius*2+1,
+                                                           self.n_inputs,
+                                                           self.num_outputs])
         #print(self.variable_indices.shape)
         #self.hex_mask = tf.constant( 
         #    self.MakeHexMask(self.kernel_radius).reshape([self.kernel_radius*4+1,self.kernel_radius*2+1,1,1]) ,
@@ -83,10 +93,10 @@ class ConvHex(tf.keras.layers.Layer):
                                                         1]) , dtype=tf.float32)
         self.out_mask = mask_
         
-        #self.ones_matrix = tf.constant(tf.ones([self.kernel_radius*4+1,
-        #                                           self.kernel_radius*2+1,
-        #                                           self.n_inputs,
-        #                                           self.num_outputs]), dtype=tf.float32)
+        self.zeros_matrix = tf.constant(tf.ones([self.kernel_radius*4+1,
+                                                   self.kernel_radius*2+1,
+                                                   self.n_inputs,
+                                                   self.num_outputs]), dtype=tf.float32)
         
         self.sparse_weights = tf.Variable(self.winitializer(
                                                 [self.variable_indices.shape[0]]
@@ -98,24 +108,41 @@ class ConvHex(tf.keras.layers.Layer):
         if type(self.activation)==str:
             self.activation = keras.activations.get(self.activation)
     def get_kernels(self):
-        return tf.sparse.to_dense(tf.sparse.reorder(tf.SparseTensor(self.variable_indices,
-                                     self.sparse_weights,
-                                      dense_shape=[self.kernel_radius*4+1,
-                                                   self.kernel_radius*2+1,
-                                                   self.n_inputs,
-                                                   self.num_outputs]
-                                     )))
+        #return tf.sparse.to_dense(tf.sparse.reorder(tf.SparseTensor(self.variable_indices,
+        #                             self.sparse_weights,
+        #                              dense_shape=[self.kernel_radius*4+1,
+        #                                           self.kernel_radius*2+1,
+        #                                           self.n_inputs,
+        #                                           self.num_outputs]
+        #                             )))
+        return tf.sparse.to_dense( tf.SparseTensor(self.variable_indices,
+                                                   self.sparse_weights,
+                                                   dense_shape=[self.kernel_radius*4+1,
+                                                                self.kernel_radius*2+1,
+                                                                self.n_inputs,
+                                                                self.num_outputs]))
     def call(self, input):
+        #self.conv = tf.keras.backend.conv2d(input, 
+        #                tf.sparse.to_dense(
+        #                    tf.sparse.reorder(
+        #                       tf.SparseTensor(self.variable_indices,
+        #                                       self.sparse_weights,
+        #                                       dense_shape=[self.kernel_radius*4+1,
+        #                                                   self.kernel_radius*2+1,
+        #                                                   self.n_inputs,
+        #                                                   self.num_outputs])
+        #                    )
+        #                )
+        #            )
+        
         self.conv = tf.keras.backend.conv2d(input, 
                         tf.sparse.to_dense(
-                            tf.sparse.reorder(
                                tf.SparseTensor(self.variable_indices,
                                                self.sparse_weights,
                                                dense_shape=[self.kernel_radius*4+1,
                                                            self.kernel_radius*2+1,
                                                            self.n_inputs,
                                                            self.num_outputs])
-                            )
                         )
                     )
         return self.activation( self.conv + self.offset )*self.out_mask
