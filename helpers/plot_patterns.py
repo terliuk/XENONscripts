@@ -108,6 +108,7 @@ def plot_one_array(pmthits ,
                    pmt_radius = 3.875, 
                    scale = colors.Normalize,
                    figsize=(10.5,10.0),
+                   show_cbar = True,
                     ):
     
     fig = plt.figure(figsize=figsize, facecolor="w")
@@ -163,8 +164,10 @@ def plot_one_array(pmthits ,
     ax.set_ylim(-70,70)
     ax.text(0.02,0.96,"Array : %s"%array, transform = ax.transAxes, 
            fontsize=20, ha ="left")
-    ax_cbar = fig.add_axes([0.08+xfrac+0.015, 0.10, 0.035, yfrac])
+    if show_cbar:
+        ax_cbar = fig.add_axes([0.08+xfrac+0.015, 0.10, 0.035, yfrac])
+        cbar = plt.colorbar(p, cax = ax_cbar)
+    else: ax_cbar=None
     ax.set_xlabel("X [ cm ]", fontsize=18)
     ax.set_ylabel("Y [ cm ]", fontsize=18)
-    cbar = plt.colorbar(p, cax = ax_cbar)
     return (fig, ax,ax_cbar)

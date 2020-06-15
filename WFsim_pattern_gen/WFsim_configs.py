@@ -145,7 +145,7 @@ class WFsim_config:
         instructions = np.zeros(n, dtype=wfsim.instruction_dtype)
         instructions['event_number'] = np.arange(1,n+1)
         instructions['time'] = 1e9*np.arange(0,n, dtype= float) +1e6
-        r = np.sqrt(self.randgen.uniform(0., (c['tpc_radius']-0.5)**2.0, n) ) ## not going all the way up to the edge
+        r = np.sqrt(self.randgen.uniform(0., (c['tpc_radius'])**2.0, n) ) ## not going all the way up to the edge
         phi = self.randgen.uniform(-np.pi, np.pi,n)
         instructions['x'] = r * np.cos(phi) 
         instructions['y'] = r * np.sin(phi) 
