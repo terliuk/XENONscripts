@@ -1,3 +1,6 @@
+# Create by Andrii Terliuk in June 2020. 
+# andrii.terliuk@gmail.com
+
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.python.ops import gen_sparse_ops
